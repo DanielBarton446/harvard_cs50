@@ -91,21 +91,21 @@ def shortest_path(source, target):
 
     If no possible path, returns None.
     """
+    # we just need to impelement BFS to find the shortest path
 
     frontier = QueueFrontier()
+    # A DFS does not guarentee an optimal path solution. So we
+    # can't use DFS.
+    # frontier = StackFrontier()
     explored = set()
     initial_node = Node(state=source, parent=None, action=None)
     frontier.add(initial_node)
 
-    while not frontier.empty():
-        current_node = frontier.remove()
-        explored.add(current_node)
-        current_person_id = current_node.state
-
-        if current_person_id == target:
+    def goal_checker(node):
+        if node.state == target:
             movie_person_actions = []
 
-            current = current_node
+            current = node
             while current.parent is not None:
                 parent = current.parent
                 pair = (current.action, current.state)
@@ -114,6 +114,16 @@ def shortest_path(source, target):
 
             movie_person_actions.reverse()
             return movie_person_actions
+        return None
+
+    while not frontier.empty():
+        current_node = frontier.remove()
+        explored.add(current_node)
+        current_person_id = current_node.state
+
+        goal_actions = goal_checker(current_node)
+        if goal_actions is not None:
+            return goal_actions
 
         # Expand the node:
         neighbors = neighbors_for_person(current_person_id)
@@ -123,6 +133,9 @@ def shortest_path(source, target):
             new_node = Node(state=neighbor_person_id,
                             parent=current_node,
                             action=neighbor_movie_id)
+            goal_actions = goal_checker(new_node)
+            if goal_actions is not None:
+                return goal_actions
             frontier.add(new_node)
 
     return None
